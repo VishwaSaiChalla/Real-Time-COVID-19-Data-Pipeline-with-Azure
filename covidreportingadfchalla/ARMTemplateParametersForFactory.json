@@ -1,0 +1,57 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "covidreportingadfchalla"
+		},
+		"ls_ablob_covidreportingdl_accountKey": {
+			"value": ""
+		},
+		"ls_ablob_covidreportingsa_connectionString": {
+			"value": ""
+		},
+		"ls_hdi_covid_cluster_clusterPassword": {
+			"value": ""
+		},
+		"ls_hdi_covid_cluster_clusterSshPassword": {
+			"value": ""
+		},
+		"ls_hdi_covid_cluster_servicePrincipalKey": {
+			"value": ""
+		},
+		"ls_sql_covid_db_password": {
+			"value": ""
+		},
+		"ls_ablob_covidreportingdl_properties_typeProperties_url": {
+			"value": "https://covid19reportingdlchalla.dfs.core.windows.net/"
+		},
+		"ls_hdi_covid_cluster_properties_typeProperties_hostSubscriptionId": {
+			"value": "3fe03faf-37af-4ca6-b4b1-9ca27b7eb8c4"
+		},
+		"ls_hdi_covid_cluster_properties_typeProperties_clusterResourceGroup": {
+			"value": "covid_reporting_rg"
+		},
+		"ls_hdi_covid_cluster_properties_typeProperties_servicePrincipalId": {
+			"value": "admin"
+		},
+		"ls_hdi_covid_cluster_properties_typeProperties_tenant": {
+			"value": "d8999fe4-76af-40b3-b435-1d8977abc08c"
+		},
+		"ls_http_cases_deaths_europe_eu_properties_typeProperties_url": {
+			"value": "@{linkedService().baseURL}"
+		},
+		"ls_sql_covid_db_properties_typeProperties_server": {
+			"value": "covid-srv-challa.database.windows.net"
+		},
+		"ls_sql_covid_db_properties_typeProperties_database": {
+			"value": "covid-db"
+		},
+		"ls_sql_covid_db_properties_typeProperties_userName": {
+			"value": "adm"
+		},
+		"tr_population_data_arrived_properties_typeProperties_scope": {
+			"value": "/subscriptions/3fe03faf-37af-4ca6-b4b1-9ca27b7eb8c4/resourceGroups/covid_reporting_rg/providers/Microsoft.Storage/storageAccounts/covidreportingtoolsa"
+		}
+	}
+}
