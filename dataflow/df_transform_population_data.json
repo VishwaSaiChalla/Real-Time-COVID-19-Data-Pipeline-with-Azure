@@ -1,0 +1,138 @@
+{
+	"name": "df_transform_population_data",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_population_raw_tsv",
+						"type": "DatasetReference"
+					},
+					"name": "PopulationByAgeSource"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_country_lookup",
+						"type": "DatasetReference"
+					},
+					"name": "CountryLookupSourceFile"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_processed_population_by_age",
+						"type": "DatasetReference"
+					},
+					"name": "SinkPopulationData"
+				}
+			],
+			"transformations": [
+				{
+					"name": "SelectRequiredFieldsOnly"
+				},
+				{
+					"name": "DeriveCountrycodeAge"
+				},
+				{
+					"name": "LookupForCountryMapping"
+				},
+				{
+					"name": "SelectAfterLookup"
+				},
+				{
+					"name": "PivotAlongAge"
+				},
+				{
+					"name": "SortWithCountryName"
+				},
+				{
+					"name": "RemoveAllNullCountryCode"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          {indic_de,geo\\time} as string,",
+				"          {2008 } as string,",
+				"          {2009 } as string,",
+				"          {2010 } as string,",
+				"          {2011 } as string,",
+				"          {2012 } as string,",
+				"          {2013 } as string,",
+				"          {2014 } as string,",
+				"          {2015 } as string,",
+				"          {2016 } as string,",
+				"          {2017 } as string,",
+				"          {2018 } as string,",
+				"          {2019 } as double",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> PopulationByAgeSource",
+				"source(output(",
+				"          country as string,",
+				"          country_code_2_digit as string,",
+				"          country_code_3_digit as string,",
+				"          continent as string,",
+				"          population as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> CountryLookupSourceFile",
+				"PopulationByAgeSource select(mapColumn(",
+				"          {indic_de,geo\\time},",
+				"          {2019 }",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> SelectRequiredFieldsOnly",
+				"SelectRequiredFieldsOnly derive(country_code = split({indic_de,geo\\time}, \",\")[2],",
+				"          age_group = ltrim(split({indic_de,geo\\time}, \",\")[1],\"PC_Y\")) ~> DeriveCountrycodeAge",
+				"DeriveCountrycodeAge, CountryLookupSourceFile lookup(country_code == country_code_2_digit,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> LookupForCountryMapping",
+				"LookupForCountryMapping select(mapColumn(",
+				"          country,",
+				"          country_code_2_digit,",
+				"          country_code_3_digit,",
+				"          population,",
+				"          {2019 },",
+				"          age_group",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> SelectAfterLookup",
+				"RemoveAllNullCountryCode pivot(groupBy(country,",
+				"          country_code_2_digit,",
+				"          country_code_3_digit,",
+				"          population),",
+				"     pivotBy(age_group),",
+				"     age_group = sum({2019 }),",
+				"     columnNaming: '$N_$V',",
+				"     lateral: true) ~> PivotAlongAge",
+				"PivotAlongAge sort(asc(country, true)) ~> SortWithCountryName",
+				"SelectAfterLookup filter(not(isNull(country))) ~> RemoveAllNullCountryCode",
+				"SortWithCountryName sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          country as string,",
+				"          country_code_2_digit as string,",
+				"          country_code_3_digit as string,",
+				"          population as string,",
+				"          cases_count as string,",
+				"          deaths_count as string,",
+				"          source as string,",
+				"          reported_date as string",
+				"     ),",
+				"     partitionFileNames:['population_by_age.csv'],",
+				"     truncate: true,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> SinkPopulationData"
+			]
+		}
+	}
+}
